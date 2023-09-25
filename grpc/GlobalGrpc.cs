@@ -9,7 +9,7 @@ using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
-namespace Network/GrpcClient {
+namespace MainGrpcClient {
 
   /// <summary>Holder for reflection information generated from global_grpc.proto</summary>
   public static partial class GlobalGrpcReflection {
@@ -29,12 +29,12 @@ namespace Network/GrpcClient {
             "bG9iYWxHcnBjUmVzcG9uc2USDwoHcnBjX2tleRgBIAEoCRIPCgdtZXNzYWdl",
             "GAIgASgJMlsKEEdsb2JhbFJwY1NlcnZpY2USRwoIU2F5SGVsbG8SHC5tYWlu",
             "X2dycGMuR2xvYmFsR3JwY1JlcXVlc3QaHS5tYWluX2dycGMuR2xvYmFsR3Jw",
-            "Y1Jlc3BvbnNlQhWqAhJOZXR3b3JrL0dycGNDbGllbnRiBnByb3RvMw=="));
+            "Y1Jlc3BvbnNlQhGqAg5NYWluR3JwY0NsaWVudGIGcHJvdG8z"));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Network/GrpcClient.GlobalGrpcRequest), global::Network/GrpcClient.GlobalGrpcRequest.Parser, new[]{ "RpcKey", "Message" }, null, null, null, null),
-            new pbr::GeneratedClrTypeInfo(typeof(global::Network/GrpcClient.GlobalGrpcResponse), global::Network/GrpcClient.GlobalGrpcResponse.Parser, new[]{ "RpcKey", "Message" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::MainGrpcClient.GlobalGrpcRequest), global::MainGrpcClient.GlobalGrpcRequest.Parser, new[]{ "RpcKey", "Message" }, null, null, null, null),
+            new pbr::GeneratedClrTypeInfo(typeof(global::MainGrpcClient.GlobalGrpcResponse), global::MainGrpcClient.GlobalGrpcResponse.Parser, new[]{ "RpcKey", "Message" }, null, null, null, null)
           }));
     }
     #endregion
@@ -55,7 +55,7 @@ namespace Network/GrpcClient {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Network/GrpcClient.GlobalGrpcReflection.Descriptor.MessageTypes[0]; }
+      get { return global::MainGrpcClient.GlobalGrpcReflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
@@ -281,7 +281,7 @@ namespace Network/GrpcClient {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::Network/GrpcClient.GlobalGrpcReflection.Descriptor.MessageTypes[1]; }
+      get { return global::MainGrpcClient.GlobalGrpcReflection.Descriptor.MessageTypes[1]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
