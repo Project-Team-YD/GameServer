@@ -27,9 +27,10 @@ namespace MainGrpcClient {
             "Chhwcm90b3MvZ2xvYmFsX2dycGMucHJvdG8SCW1haW5fZ3JwYyI1ChFHbG9i",
             "YWxHcnBjUmVxdWVzdBIPCgdycGNfa2V5GAEgASgJEg8KB21lc3NhZ2UYAiAB",
             "KAkiNgoSR2xvYmFsR3JwY1Jlc3BvbnNlEg8KB3JwY19rZXkYASABKAkSDwoH",
-            "bWVzc2FnZRgCIAEoCTJbChBHbG9iYWxScGNTZXJ2aWNlEkcKCFNheUhlbGxv",
-            "EhwubWFpbl9ncnBjLkdsb2JhbEdycGNSZXF1ZXN0Gh0ubWFpbl9ncnBjLkds",
-            "b2JhbEdycGNSZXNwb25zZUIRqgIOTWFpbkdycGNDbGllbnRiBnByb3RvMw=="));
+            "bWVzc2FnZRgCIAEoCTJeChFHbG9iYWxHUnBjU2VydmljZRJJCgpHbG9iYWxH",
+            "UnBjEhwubWFpbl9ncnBjLkdsb2JhbEdycGNSZXF1ZXN0Gh0ubWFpbl9ncnBj",
+            "Lkdsb2JhbEdycGNSZXNwb25zZUIRqgIOTWFpbkdycGNDbGllbnRiBnByb3Rv",
+            "Mw=="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {

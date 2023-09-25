@@ -4,8 +4,8 @@ package main_grpc;
 //option go_package = "../grpc";
 option csharp_namespace = "MainGrpcClient";
 
-service GlobalRpcService {
-  rpc SayHello (GlobalGrpcRequest) returns (GlobalGrpcResponse);
+service GlobalGRpcService {
+  rpc GlobalGRpc (GlobalGrpcRequest) returns (GlobalGrpcResponse);
 }
 
 message GlobalGrpcRequest {

@@ -3,23 +3,24 @@ package main
 import (
 	"context"
 	"net"
-	proto_test "project_yd/protofiles"
+	global_grpc "project_yd/grpc"
 
 	"google.golang.org/grpc"
 	//itemcreateevent "github.com/heroiclabs/nakama/v3/nurhyme_common/ItemCreateEvent"
 )
 
 type server struct {
-	proto_test.UnimplementedGreeterServer
+	global_grpc.UnimplementedGlobalRpcServiceServer
 }
 
-func (s *server) SayHello(ctx context.Context, in *proto_test.HelloRequest) (*proto_test.HelloResponse, error) {
-	println("Test :: Req :: ", in.GetName())
-	result := &proto_test.HelloResponse{}
+func (s *server) SayHello(ctx context.Context, in *global_grpc.GlobalGrpcRequest) (*global_grpc.GlobalGrpcResponse, error) {
+	println("Request!! Rpc Key::", in.RpcKey , "/ Message::", in.Message,)
+	result := &global_grpc.GlobalGrpcResponse{}
 
 	result.Message = "Test Response Success"
 	return result, nil
 }
+
 
 func main() {
 	lis, err := net.Listen("tcp", ":19001")
@@ -28,7 +29,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	proto_test.RegisterGreeterServer(grpcServer, &server{})
+	global_grpc.RegisterGlobalRpcServiceServer(grpcServer, &server{})
 
 	println("server listening at ", lis.Addr())
 
