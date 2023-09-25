@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package main_grpc;
+//option go_package = "../grpc";
+option csharp_namespace = "MainGrpc";
+
+service GlobalRpcService {
+  rpc SayHello (GlobalGrpcRequest) returns (GlobalGrpcResponse);
+}
+
+message GlobalGrpcRequest {
+  string rpc_key = 1;
+  string message = 2;
+}
+
+message GlobalGrpcResponse {
+  string rpc_key = 1;
+  string message = 2;
+}
