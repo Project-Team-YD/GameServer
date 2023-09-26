@@ -10,17 +10,16 @@ import (
 )
 
 type server struct {
-	global_grpc.UnimplementedGlobalRpcServiceServer
+	global_grpc.UnimplementedGlobalGRpcServiceServer
 }
 
 func (s *server) SayHello(ctx context.Context, in *global_grpc.GlobalGrpcRequest) (*global_grpc.GlobalGrpcResponse, error) {
-	println("Request!! Rpc Key::", in.RpcKey , "/ Message::", in.Message,)
+	println("Request!! Rpc Key::", in.RpcKey, "/ Message::", in.Message)
 	result := &global_grpc.GlobalGrpcResponse{}
 
 	result.Message = "Test Response Success"
 	return result, nil
 }
-
 
 func main() {
 	lis, err := net.Listen("tcp", ":19001")
@@ -29,7 +28,7 @@ func main() {
 	}
 
 	grpcServer := grpc.NewServer()
-	global_grpc.RegisterGlobalRpcServiceServer(grpcServer, &server{})
+	global_grpc.RegisterGlobalGRpcServiceServer(grpcServer, &server{})
 
 	println("server listening at ", lis.Addr())
 

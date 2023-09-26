@@ -19,89 +19,89 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	GlobalRpcService_SayHello_FullMethodName = "/main_grpc.GlobalRpcService/SayHello"
+	GlobalGRpcService_GlobalGRpc_FullMethodName = "/main_grpc.GlobalGRpcService/GlobalGRpc"
 )
 
-// GlobalRpcServiceClient is the client API for GlobalRpcService service.
+// GlobalGRpcServiceClient is the client API for GlobalGRpcService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type GlobalRpcServiceClient interface {
-	SayHello(ctx context.Context, in *GlobalGrpcRequest, opts ...grpc.CallOption) (*GlobalGrpcResponse, error)
+type GlobalGRpcServiceClient interface {
+	GlobalGRpc(ctx context.Context, in *GlobalGrpcRequest, opts ...grpc.CallOption) (*GlobalGrpcResponse, error)
 }
 
-type globalRpcServiceClient struct {
+type globalGRpcServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewGlobalRpcServiceClient(cc grpc.ClientConnInterface) GlobalRpcServiceClient {
-	return &globalRpcServiceClient{cc}
+func NewGlobalGRpcServiceClient(cc grpc.ClientConnInterface) GlobalGRpcServiceClient {
+	return &globalGRpcServiceClient{cc}
 }
 
-func (c *globalRpcServiceClient) SayHello(ctx context.Context, in *GlobalGrpcRequest, opts ...grpc.CallOption) (*GlobalGrpcResponse, error) {
+func (c *globalGRpcServiceClient) GlobalGRpc(ctx context.Context, in *GlobalGrpcRequest, opts ...grpc.CallOption) (*GlobalGrpcResponse, error) {
 	out := new(GlobalGrpcResponse)
-	err := c.cc.Invoke(ctx, GlobalRpcService_SayHello_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, GlobalGRpcService_GlobalGRpc_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// GlobalRpcServiceServer is the server API for GlobalRpcService service.
-// All implementations must embed UnimplementedGlobalRpcServiceServer
+// GlobalGRpcServiceServer is the server API for GlobalGRpcService service.
+// All implementations must embed UnimplementedGlobalGRpcServiceServer
 // for forward compatibility
-type GlobalRpcServiceServer interface {
-	SayHello(context.Context, *GlobalGrpcRequest) (*GlobalGrpcResponse, error)
-	mustEmbedUnimplementedGlobalRpcServiceServer()
+type GlobalGRpcServiceServer interface {
+	GlobalGRpc(context.Context, *GlobalGrpcRequest) (*GlobalGrpcResponse, error)
+	mustEmbedUnimplementedGlobalGRpcServiceServer()
 }
 
-// UnimplementedGlobalRpcServiceServer must be embedded to have forward compatible implementations.
-type UnimplementedGlobalRpcServiceServer struct {
+// UnimplementedGlobalGRpcServiceServer must be embedded to have forward compatible implementations.
+type UnimplementedGlobalGRpcServiceServer struct {
 }
 
-func (UnimplementedGlobalRpcServiceServer) SayHello(context.Context, *GlobalGrpcRequest) (*GlobalGrpcResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
+func (UnimplementedGlobalGRpcServiceServer) GlobalGRpc(context.Context, *GlobalGrpcRequest) (*GlobalGrpcResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GlobalGRpc not implemented")
 }
-func (UnimplementedGlobalRpcServiceServer) mustEmbedUnimplementedGlobalRpcServiceServer() {}
+func (UnimplementedGlobalGRpcServiceServer) mustEmbedUnimplementedGlobalGRpcServiceServer() {}
 
-// UnsafeGlobalRpcServiceServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to GlobalRpcServiceServer will
+// UnsafeGlobalGRpcServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to GlobalGRpcServiceServer will
 // result in compilation errors.
-type UnsafeGlobalRpcServiceServer interface {
-	mustEmbedUnimplementedGlobalRpcServiceServer()
+type UnsafeGlobalGRpcServiceServer interface {
+	mustEmbedUnimplementedGlobalGRpcServiceServer()
 }
 
-func RegisterGlobalRpcServiceServer(s grpc.ServiceRegistrar, srv GlobalRpcServiceServer) {
-	s.RegisterService(&GlobalRpcService_ServiceDesc, srv)
+func RegisterGlobalGRpcServiceServer(s grpc.ServiceRegistrar, srv GlobalGRpcServiceServer) {
+	s.RegisterService(&GlobalGRpcService_ServiceDesc, srv)
 }
 
-func _GlobalRpcService_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _GlobalGRpcService_GlobalGRpc_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GlobalGrpcRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GlobalRpcServiceServer).SayHello(ctx, in)
+		return srv.(GlobalGRpcServiceServer).GlobalGRpc(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: GlobalRpcService_SayHello_FullMethodName,
+		FullMethod: GlobalGRpcService_GlobalGRpc_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GlobalRpcServiceServer).SayHello(ctx, req.(*GlobalGrpcRequest))
+		return srv.(GlobalGRpcServiceServer).GlobalGRpc(ctx, req.(*GlobalGrpcRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// GlobalRpcService_ServiceDesc is the grpc.ServiceDesc for GlobalRpcService service.
+// GlobalGRpcService_ServiceDesc is the grpc.ServiceDesc for GlobalGRpcService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var GlobalRpcService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "main_grpc.GlobalRpcService",
-	HandlerType: (*GlobalRpcServiceServer)(nil),
+var GlobalGRpcService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "main_grpc.GlobalGRpcService",
+	HandlerType: (*GlobalGRpcServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SayHello",
-			Handler:    _GlobalRpcService_SayHello_Handler,
+			MethodName: "GlobalGRpc",
+			Handler:    _GlobalGRpcService_GlobalGRpc_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
