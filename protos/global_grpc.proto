@@ -14,6 +14,5 @@ message GlobalGrpcRequest {
 }
 
 message GlobalGrpcResponse {
-  string rpc_key = 1;
-  string message = 2;
+  string message = 1;
 }
