@@ -6,7 +6,7 @@ option go_package = "../grpc";
 
 service GlobalGRpcService {
   rpc GlobalGRpc (GlobalGrpcRequest) returns (GlobalGrpcResponse);
-  rpc GlobalGrpcStream (stream GlobalGrpcRequest) returns (GlobalGrpcResponse);
+  rpc GlobalGrpcStream (stream GlobalGrpcRequest) returns (stream GlobalGrpcResponse);
 }
 
 message GlobalGrpcRequest {
