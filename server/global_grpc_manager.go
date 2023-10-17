@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"io"
 	"net"
 	global_grpc "project_yd/grpc"
 	"sync"
@@ -53,6 +54,30 @@ func (server *GrpcServer) GlobalGRpc(ctx context.Context, request *global_grpc.G
 	result.Message = LoadRpc(request.RpcKey, request.Message)
 
 	return result, nil
+}
+
+func (server *GrpcServer) GlobalGRpcStream(stream global_grpc.GlobalGRpcService_GlobalGrpcStreamServer) error {
+	for {
+		// 클라이언트로부터 메시지를 받음
+		request, err := stream.Recv()
+		if err == io.EOF {
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+
+		// rpcKey와 message를 사용하여 결과를 생성
+		result := LoadRpc(request.RpcKey, request.Message)
+
+		// 결과를 클라이언트에게 보냄
+		response := &global_grpc.GlobalGrpcResponse{
+			Message: result,
+		}
+		if err := stream.SendMsg(response); err != nil {
+			return err
+		}
+	}
 }
 
 func GrpcServe(grpcServer *grpc.Server, listen net.Listener) {
