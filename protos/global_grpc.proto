@@ -1,12 +1,12 @@
 syntax = "proto3";
 
 package main_grpc;
-//option go_package = "../grpc";
-option csharp_namespace = "MainGrpcClient";
+option go_package = "../grpc";
+//option csharp_namespace = "MainGrpcClient";
 
 service GlobalGRpcService {
   rpc GlobalGRpc (GlobalGrpcRequest) returns (GlobalGrpcResponse);
-  rpc GlobalGrpcStream (GlobalGrpcRequest) returns (GlobalGrpcResponse);
+  rpc GlobalGrpcStream (stream GlobalGrpcRequest) returns (GlobalGrpcResponse);
 }
 
 message GlobalGrpcRequest {
