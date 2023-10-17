@@ -1,3 +1,3 @@
 package server
 
-const SERVER_PORT = ":19001"
+const SERVER_PORT = ":18080"

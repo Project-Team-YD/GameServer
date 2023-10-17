@@ -6,6 +6,7 @@ option csharp_namespace = "MainGrpcClient";
 
 service GlobalGRpcService {
   rpc GlobalGRpc (GlobalGrpcRequest) returns (GlobalGrpcResponse);
+  rpc GlobalGrpcStream (GlobalGrpcRequest) returns (GlobalGrpcResponse);
 }
 
 message GlobalGrpcRequest {
