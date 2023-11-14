@@ -1,20 +1,25 @@
 package server
 
 import (
-	"context"
-	"io"
+	"container/list"
 	"net"
 	global_grpc "project_yd/grpc"
+	"project_yd/util"
 	"sync"
 
 	"google.golang.org/grpc"
 )
 
 var GlobalGrpcEvent *sync.Map
+var GlobalGrpcStreamEvent *sync.Map
+var mutex sync.Mutex
+var ClientMessageList list.List
 
 // 함수 시그니처: 클라이언트로부터 받은 key 값에 따라 호출할 함수들
-type RpcKeyHandlerFunc func(payload string) string
+type RpcKeyHandlerFunc func(UUID string, payload string) string
+type RpcStreamBroadcastKeyHandlerFunc func(UUID string, payload string) (string, int32)
 
+// #region ** UNARY RPC **
 // -- rpc로 쓰일 function 등록
 func RegistRpc(rpcKey string, function RpcKeyHandlerFunc) {
 	_, ok := GlobalGrpcEvent.Load(rpcKey)
@@ -27,7 +32,10 @@ func RegistRpc(rpcKey string, function RpcKeyHandlerFunc) {
 }
 
 // -- 클라이언트로부터 호출된 rpc명으로 호출할 function을 찾고 payload값을 넘겨주어 결과값을 받는다.
-func LoadRpc(rpcKey string, payload string) string {
+func LoadRpc(rpcKey string, UUID string, payload string) string {
+	mutex.Lock()
+	defer mutex.Unlock()
+
 	var result string
 	rpcFunc, ok := GlobalGrpcEvent.Load(rpcKey)
 	if !ok {
@@ -36,7 +44,7 @@ func LoadRpc(rpcKey string, payload string) string {
 		return result
 	} else {
 		if function, ok := rpcFunc.(RpcKeyHandlerFunc); ok {
-			return function(payload)
+			return function(UUID, payload)
 		} else {
 			result = "Result is not RpcKeyHandlerFunc Type"
 			return result
@@ -44,60 +52,68 @@ func LoadRpc(rpcKey string, payload string) string {
 	}
 }
 
+//#endregion
+
+// #region ** BIDIRECT STREAM RPC **
+// -- rpc로 쓰일 function 등록
+func RegistRpcStream(rpcKey string, function RpcStreamBroadcastKeyHandlerFunc) {
+	_, ok := GlobalGrpcStreamEvent.Load(rpcKey)
+	if ok {
+		println("RPC KEY : ", rpcKey, " is Duplicate!")
+		return
+	}
+	GlobalGrpcStreamEvent.Store(rpcKey, function)
+	println("RPC KEY : ", rpcKey, " is Regist Success!")
+}
+
+// -- 클라이언트로부터 호출된 rpc명으로 호출할 function을 찾고 payload값을 넘겨주어 결과값을 받는다.
+func LoadRpcStream(rpcKey string, UUID string, payload string) (string, int32) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	var result string
+	rpcFunc, ok := GlobalGrpcStreamEvent.Load(rpcKey)
+	if !ok {
+		result = "Not Found RpcStream Key :" + rpcKey
+		println(result)
+		return result, util.ERROR
+	} else {
+		if function, ok := rpcFunc.(RpcStreamBroadcastKeyHandlerFunc); ok {
+			return function(UUID, payload)
+		} else {
+			result = "Result is not RpcStreamKeyHandlerFunc Type"
+			return result, util.ERROR
+		}
+	}
+}
+
+//#endregion
+
 type GrpcServer struct {
 	global_grpc.UnimplementedGlobalGRpcServiceServer
 }
 
-// -- 클라이언트로부터 호출이 들어오면 rpcKey를 기준으로 등록된 function을 호출할것을 찾는다.
-func (server *GrpcServer) GlobalGRpc(ctx context.Context, request *global_grpc.GlobalGrpcRequest) (*global_grpc.GlobalGrpcResponse, error) {
-	result := &global_grpc.GlobalGrpcResponse{}
-	result.Message = LoadRpc(request.RpcKey, request.Message)
-
-	return result, nil
-}
-
-func (server *GrpcServer) GlobalGRpcStream(stream global_grpc.GlobalGRpcService_GlobalGrpcStreamServer) error {
-	for {
-		// 클라이언트로부터 메시지를 받음
-		request, err := stream.Recv()
-		if err == io.EOF {
-			return nil
-		}
-		if err != nil {
-			return err
-		}
-
-		// rpcKey와 message를 사용하여 결과를 생성
-		result := LoadRpc(request.RpcKey, request.Message)
-
-		// 결과를 클라이언트에게 보냄
-		response := &global_grpc.GlobalGrpcResponse{
-			Message: result,
-		}
-		if err := stream.SendMsg(response); err != nil {
-			return err
-		}
+func BackgroundGrpcServer() {
+	grpcServer := grpc.NewServer()
+	listen, err := net.Listen("tcp", SERVER_PORT)
+	if err != nil {
+		println("ListenError!!", err.Error())
+		return
 	}
-}
+	global_grpc.RegisterGlobalGRpcServiceServer(grpcServer, &GrpcServer{})
 
-func GrpcServe(grpcServer *grpc.Server, listen net.Listener) {
 	if err := grpcServer.Serve(listen); err != nil {
 		println("ListenGrpc Error!!::", err)
 	}
+
+	go ReceiveClientsMessage()
 }
 
 func StartGrpcServer() {
 	println("Start GRPC Server")
 	GlobalGrpcEvent = new(sync.Map)
-
-	grpcServer := grpc.NewServer()
-	lis, err := net.Listen("tcp", SERVER_PORT)
-	if err != nil {
-		println("ListenError!!", err.Error())
-		return
-	}
-
-	global_grpc.RegisterGlobalGRpcServiceServer(grpcServer, &GrpcServer{})
-	go GrpcServe(grpcServer, lis)
+	GlobalGrpcStreamEvent = new(sync.Map)
+	ClientMessageList = *list.New()
+	go BackgroundGrpcServer()
 
 }

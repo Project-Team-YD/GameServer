@@ -15,6 +15,15 @@ func ResponseErrorMessage(messageCode uint, errMessage string) string {
 	return string(result)
 }
 
+func ResponseBaseMessage(messageCode uint, message string) string {
+	responsePacket := packet.ResponsePacket{}
+	responsePacket.Code = messageCode
+	responsePacket.Message = message
+
+	result, _ := json.Marshal(responsePacket)
+	return string(result)
+}
+
 func ResponseMessage(responsePacket interface{}) string {
 	result, _ := json.Marshal(responsePacket)
 	return string(result)

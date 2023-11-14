@@ -1,38 +1,35 @@
 package main
 
 import (
-	"encoding/json"
-	login "project_yd/login"
+	"project_yd/game"
 	server "project_yd/server"
-	packet "project_yd/server/server_packet"
-	util "project_yd/util"
+	"sync"
 	//itemcreateevent "github.com/heroiclabs/nakama/v3/nurhyme_common/ItemCreateEvent"
 )
 
-func RpcKeyHandlerFunc(payload string) string {
-	requestPacket := packet.ReqPacketTest{}
-	err := json.Unmarshal([]byte(payload), &requestPacket)
-	if err != nil {
-		return util.ResponseErrorMessage(400, err.Error())
-	}
-	responsePacket := packet.ResPacketTest{}
-	responsePacket.Code = 200
-	responsePacket.Message = "Sueccess"
-	responsePacket.Seconds = "씨발"
-
-	return util.ResponseMessage(responsePacket)
-}
-
 func RegistRpc() {
-	server.RegistRpc("rpcTest", RpcKeyHandlerFunc)
-	login.RegistLoginRpc()
+	game.RegistSessionRpc()
 }
 
 func main() {
-	//-- start grpc server
-	server.StartGrpcServer()
-	RegistRpc()
+
+	var waitGroup sync.WaitGroup
+
 	server.StartDBConnection()
-	//db := server.DBManager.Database["login"]
+	server.RedisConnection()
+	//-- GoRoutine Count +1
+	waitGroup.Add(1)
+	go func() {
+		//-- GoRoutine Count -1
+		defer waitGroup.Done()
+		//-- Start Grpc server
+		server.StartGrpcServer()
+		//-- Rpc 등록
+		RegistRpc()
+		//-- Notification 서버 연결
+		server.ConnectToNotificationServer()
+	}()
+
+	waitGroup.Wait()
 	select {}
 }
