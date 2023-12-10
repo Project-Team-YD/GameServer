@@ -1,6 +1,7 @@
 package util
 
 const (
+	Fail        = 100
 	Success     = 200
 	BadRequest  = 400
 	NotFound    = 404
@@ -8,10 +9,27 @@ const (
 	ServerError = 500
 )
 const (
-	PINGPONG        = 0
-	HEARTBEAT       = 1
-	DUPLICATE_LOGIN = 2
-	ERROR           = 3
+	HEARTBEAT        = 1
+	DUPLICATE_LOGIN  = 2
+	ERROR            = 3
+	LOAD_INVENTORY   = 4
+	SAVE_INVENTORY   = 5
+	BUY_ITEM         = 6
+	UPGRADE_WEAPON   = 7
+	JOIN_GAME        = 8
+	LOAD_INGAME_SHOP = 9
+	BUY_INGAME_ITEM  = 10
+)
+
+const (
+	TYPE_WEAPON = 0
+	TYPE_EFFECT = 1
+)
+const (
+	DAGGER     = 0
+	SWORD      = 1
+	GUN        = 2
+	NINJA_STAR = 3
 )
 
 const (

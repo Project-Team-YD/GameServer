@@ -171,3 +171,20 @@ func ClientMessageDequeue() (packet.UserMessage, bool) {
 
 	return userMessage, true
 }
+
+type Weapon struct {
+	Id      int
+	Enchant int
+}
+type Effect struct {
+	Id    int
+	Count int
+}
+type User struct {
+	CurrentStage int
+	Gold         int
+	Slot         []Weapon
+	Effect       []Effect
+}
+
+var Users map[string]*User

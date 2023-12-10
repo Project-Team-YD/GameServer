@@ -89,21 +89,26 @@ func DeleteRedisKey(key string) {
 func DeleteHeartBeat(UUID string) {
 	key := HEARTBEAT_KEY + UUID
 	DeleteRedisKey(key)
+	println("DeleteHeartBeat UUID:", UUID)
 }
 
 const HEARTBEAT_KEY = "HeartBeat_"
 
 func SetHeartBeat(UUID string) (string, error) {
 	key := HEARTBEAT_KEY + UUID
-	value := HEARTBEAT_KEY + time.Now().String()
+	currentTime := time.Now()
+	layout := "2006-01-02 15:04:05"
+	formattedTime := currentTime.Format(layout)
+	value := HEARTBEAT_KEY + formattedTime
 	err := SetRedis(key, value)
 	if err != nil {
 		println("Set HeartBeat Error")
 		return "", err
 	}
-
+	println("SetHeartBeat")
 	return value, nil
 }
+
 func GetHeartBeat(UUID string) (string, error) {
 	key := HEARTBEAT_KEY + UUID
 	heartBeat, err := GetRedis(key)

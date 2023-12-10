@@ -1,8 +1,8 @@
 CREATE TABLE rank_time_attack (
     uid VARCHAR(45) NOT NULL,
-    clear_time TIME DEFAULT CURRENT_TIMESTAMP,
+    clear_time DATETIME DEFAULT CURRENT_TIMESTAMP(),
     PRIMARY KEY(uid),
-    INDEX(clear_time),
+    INDEX(clear_time)
 );
 
 

@@ -10,45 +10,21 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
-var Clients = make(map[string]global_grpc.GlobalGRpcService_GlobalGrpcStreamServer)
 var BroadcastClients = make(map[string]global_grpc.GlobalGRpcService_GlobalGrpcStreamBroadcastServer)
 var sessionMutex sync.Mutex
-
-// -- 클라이언트 연결 시작 클라이언트의 스트림 저장
-func RegisterClient(UUID string, client global_grpc.GlobalGRpcService_GlobalGrpcStreamServer) {
-	sessionMutex.Lock()
-	defer sessionMutex.Unlock()
-
-	_, ok := Clients[UUID]
-	if !ok {
-		Clients[UUID] = client
-	}
-}
 
 // -- 클라이언트 연결 시작 클라이언트의 스트림 저장
 func RegisterBroadcastClient(UUID string, client global_grpc.GlobalGRpcService_GlobalGrpcStreamBroadcastServer) {
 	sessionMutex.Lock()
 	defer sessionMutex.Unlock()
 
-	_, ok := Clients[UUID]
+	_, ok := BroadcastClients[UUID]
 	if !ok {
 		BroadcastClients[UUID] = client
 	}
 }
 
 // -- 클라이언트 연결 종료 클라이언트 스트림 제거
-func UnregisterClient(UUID string) {
-	sessionMutex.Lock()
-	defer sessionMutex.Unlock()
-	_, ok := Clients[UUID]
-	if ok {
-		delete(Clients, UUID)
-	} else {
-		println("UnregisterClient:: Error")
-		println("존재하지 않는데 삭제 호출 들어옴")
-	}
-}
-
 func UnregisterBroadcastClient(UUID string) {
 	sessionMutex.Lock()
 	defer sessionMutex.Unlock()
@@ -57,6 +33,7 @@ func UnregisterBroadcastClient(UUID string) {
 		println("DeleteBroadcastClient::", UUID)
 		delete(BroadcastClients, UUID)
 		DeleteHeartBeat(UUID)
+		delete(Users, UUID)
 	} else {
 		println("UnregisterBroadcastClient:: Error")
 		println("존재하지 않는데 삭제 호출 들어옴")

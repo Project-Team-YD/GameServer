@@ -114,6 +114,7 @@ func StartGrpcServer() {
 	GlobalGrpcEvent = new(sync.Map)
 	GlobalGrpcStreamEvent = new(sync.Map)
 	ClientMessageList = *list.New()
+	Users = make(map[string]*User)
 	go BackgroundGrpcServer()
 
 }

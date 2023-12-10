@@ -24,6 +24,7 @@ func BroadcastDuplicateLogin(UUID string) {
 	client, isExist := BroadcastClients[UUID]
 	if !isExist {
 		println("BroadcastDuplicateLogin Not Exist UUID:", UUID)
+		DeleteHeartBeat(UUID)
 		return
 	}
 	broadcastPacket := packet.BroadcastBase{}
