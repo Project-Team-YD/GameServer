@@ -26,7 +26,7 @@ func RegistGameRpc() {
 }
 
 func LoadTables(UUID string, payload string) string {
-
+	ctx := context.Background()
 	responsePacket := response.GameDB{}
 
 	item := response.Item{}
@@ -68,16 +68,36 @@ func LoadTables(UUID string, payload string) string {
 		responsePacket.WeaponEnchantTable[key] = weaponEnchant
 	}
 
+	gameDB := server.DBManager.Game
+	invenQuery := `SELECT item_id FROM inventory WHERE uid = ?`
+	result, invenErr := gameDB.QueryContext(ctx, invenQuery, UUID)
+
+	if invenErr != nil {
+		return util.ResponseErrorMessage(util.ServerError, invenErr.Error())
+	}
+	inventory := map[int]bool{}
+	inventory = make(map[int]bool)
+	var itemId int
+	for result.Next() {
+		result.Scan(&itemId)
+		inventory[itemId] = true
+	}
+
 	shopItem := response.ShopItem{}
 	responsePacket.ShopTable = make(map[int]response.ShopItem)
 	for key, val := range table.ShopTable {
 		shopItem.Id = val.Id
 		shopItem.MoneyType = val.MoneyType
 		shopItem.Price = val.Price
+		isBuy, isExist := inventory[val.Id]
+		if isExist {
+			shopItem.IsBuy = isBuy
+		} else {
+			shopItem.IsBuy = false
+		}
 		responsePacket.ShopTable[key] = shopItem
 	}
 
-	ctx := context.Background()
 	db := server.DBManager.Login
 	moneyQuery := `SELECT money FROM account WHERE uid =?`
 	err := db.QueryRowContext(ctx, moneyQuery, UUID).Scan(&responsePacket.Money)

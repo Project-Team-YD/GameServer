@@ -44,9 +44,10 @@ type WeaponEnchant struct {
 	Price       int `json:"price"`
 }
 type ShopItem struct {
-	Id        int `json:"id"`
-	MoneyType int `json:"moneyType"`
-	Price     int `json:"price"`
+	Id        int  `json:"id"`
+	MoneyType int  `json:"moneyType"`
+	Price     int  `json:"price"`
+	IsBuy     bool `json:"isBuy"`
 }
 
 type InventoryItem struct {
