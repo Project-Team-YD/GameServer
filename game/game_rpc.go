@@ -411,6 +411,8 @@ func LoadIngameShop(UUID string, payload string) string {
 		ingameShopItem.Price = table.ShopIngameTable[itemId].Price
 		responsePacket.Items = append(responsePacket.Items, ingameShopItem)
 	}
+	responsePacket.Code = util.Success
+	responsePacket.Message = "Success"
 	return util.ResponseMessage(responsePacket)
 }
 
