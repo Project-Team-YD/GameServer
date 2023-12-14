@@ -23,6 +23,11 @@ func RegistGameRpc() {
 	server.RegistRpc("load_ingame_shop", LoadIngameShop)
 	server.RegistRpc("buy_ingame_item", BuyIngameItem)
 	server.RegistRpc("user_name", ChangeUserName)
+	server.RegistRpc("load_time_attack_rank_table", LoadTimeAttackRankTable)
+	server.RegistRpc("update_time_attack_rank", UpdateTimeAttackRank)
+	server.RegistRpc("game_over", GameOver)
+
+	server.RegistRpc("user_name", ChangeUserName)
 }
 
 func LoadTables(UUID string, payload string) string {
@@ -430,15 +435,16 @@ func BuyIngameItem(UUID string, payload string) string {
 		return util.ResponseBaseMessage(util.BadRequest, "Check Your CurrentStage")
 	}
 
-	user, exists := server.Users[UUID]
+	_, exists := server.Users[UUID]
 	if !exists {
 		userData := server.User{}
 		server.Users[UUID] = &userData
 	}
-	if len(user.Slot) > 0 {
-		server.Users[UUID].Slot = []server.Weapon{}
-	}
-
+	/*
+		if len(user.Slot) > 0 {
+			server.Users[UUID].Slot = []server.Weapon{}
+		}
+	*/
 	//-- 구매하려는 아이템의 가격보다 골드 보유량이 많은지 적은지 체크
 	if server.Users[UUID].Gold < table.ShopIngameTable[itemId].Price {
 		return util.ResponseBaseMessage(util.BadRequest, "Check Your Gold")
@@ -536,6 +542,176 @@ func ChangeUserName(UUID string, payload string) string {
 		return util.ResponseErrorMessage(util.ServerError, updateErr.Error())
 	}
 
+	responsePacket.Code = util.Success
+	responsePacket.Message = "Success"
+
+	return util.ResponseMessage(responsePacket)
+}
+
+func LoadTimeAttackRankTable(UUID string, payload string) string {
+	responsePacket := response.LoadTimeAttackRankTable{}
+
+	ctx := context.Background()
+	db := server.DBManager.Login
+	query := `SELECT user_name, record_time FROM time_attack_rank ORDER BY record_time ASC LIMIT 10`
+	result, err := db.QueryContext(ctx, query)
+	defer result.Close()
+	userData := response.TimeAttackUser{}
+
+	userData.Rank = 1
+	for result.Next() {
+		if err != nil {
+			if err == sql.ErrNoRows {
+				responsePacket.Code = util.NotFound
+				responsePacket.Message = "Empty Rank"
+				return util.ResponseMessage(responsePacket)
+			}
+			return util.ResponseErrorMessage(util.ServerError, err.Error())
+		}
+		result.Scan(&userData.UserName, &userData.RecordTime)
+		responsePacket.RankList = append(responsePacket.RankList, userData)
+		userData.Rank++
+	}
+	responsePacket.Code = util.Success
+	responsePacket.Message = "Success"
+
+	return util.ResponseMessage(responsePacket)
+}
+
+/*
+기존 타임어택 값과 새로운 타임어택 값 비교후
+새로운 타임어택 값이 클경우 db갱신
+
+신규일 경우 insert
+
+랭킹 순위 유저중 해당될 될경우
+재화 보상 2배
+
+rank변수 0일경우 랭킹에 들지 못함
+0이 아닐경우 랭킹에 해당
+*/
+//-- 테스트 위해서 체크 랭킹 범위 체크해야됨
+var limitRank = "3"
+
+func UpdateTimeAttackRank(UUID string, payload string) string {
+	requestPacket := request.UpdateTimeAttackRank{}
+	responsePacket := response.UpdateTimeAttackRank{}
+	err := json.Unmarshal([]byte(payload), &requestPacket)
+	if err != nil {
+		return util.ResponseErrorMessage(util.BadRequest, err.Error())
+	}
+	userName := GetUserName(UUID)
+	var recordTime float32
+	var rank int
+	rank = 1
+	responsePacket.Rank = 0
+	clearMoney := 200
+
+	ctx := context.Background()
+	db := server.DBManager.Login
+
+	//-- 기존 타임어택 정보 가져오기
+	query := `SELECT record_time FROM time_attack_rank WHERE uid = ?`
+	rankErr := db.QueryRowContext(ctx, query, UUID).Scan(&recordTime)
+	if rankErr != nil {
+		//-- 랭킹 최초 등록시
+		if rankErr == sql.ErrNoRows {
+			query = `INSERT INTO time_attack_rank (uid, user_name, record_time) VALUES (?, ?, ?)`
+			_, insertErr := db.ExecContext(ctx, query, UUID, userName, requestPacket.RecordTime)
+			if insertErr != nil {
+				return util.ResponseErrorMessage(util.ServerError, insertErr.Error())
+			}
+
+			query := `UPDATE account SET money = money + ? WHERE uid = ?`
+			_, moneyErr := db.ExecContext(ctx, query, clearMoney, UUID)
+			if moneyErr != nil {
+				return util.ResponseErrorMessage(util.ServerError, moneyErr.Error())
+			}
+
+			query = `SELECT money FROM account WHERE uid = ?`
+			moneyErr = db.QueryRowContext(ctx, query, UUID).Scan(&responsePacket.Money)
+			if moneyErr != nil {
+				return util.ResponseErrorMessage(util.ServerError, moneyErr.Error())
+			}
+
+			responsePacket.Code = util.Success
+			responsePacket.Message = "Success"
+			responsePacket.RecordTime = requestPacket.RecordTime
+			return util.ResponseMessage(responsePacket)
+		}
+		return util.ResponseErrorMessage(util.ServerError, rankErr.Error())
+	}
+
+	responsePacket.RecordTime = recordTime
+
+	//-- 기존 기록 갱신시 갱신된 값 저장
+	if requestPacket.RecordTime > recordTime {
+		query = `UPDATE time_attack_rank SET record_time = ? WHERE uid = ?`
+		_, rankErr = db.ExecContext(ctx, query, requestPacket.RecordTime, UUID)
+		if rankErr != nil {
+			return util.ResponseErrorMessage(util.ServerError, rankErr.Error())
+		}
+
+		responsePacket.RecordTime = requestPacket.RecordTime
+	}
+
+	//-- 랭킹 순위에 들어가 있는지 (현재 10위 셋팅)
+	query = `SELECT uid FROM time_attack_rank ORDER BY ASC LIMIT ` + limitRank
+	result, rankErr := db.QueryContext(ctx, query)
+	var rankerId string
+	for result.Next() {
+		if rankErr != nil {
+			return util.ResponseErrorMessage(util.ServerError, rankErr.Error())
+		}
+		result.Scan(&rankerId)
+		if UUID == rankerId {
+			responsePacket.Rank = rank
+			clearMoney *= 2
+			break
+		}
+		rank++
+	}
+
+	//-- 보상 재화 계정에 추가
+	query = `UPDATE account SET money = money + ? WHERE uid = ?`
+	_, moneyErr := db.ExecContext(ctx, query, clearMoney, UUID)
+	if moneyErr != nil {
+		return util.ResponseErrorMessage(util.ServerError, moneyErr.Error())
+	}
+
+	//-- 현재 재화 불러오기
+	query = `SELECT money FROM account WHERE uid = ?`
+	moneyErr = db.QueryRowContext(ctx, query, UUID).Scan(&responsePacket.Money)
+	if moneyErr != nil {
+		return util.ResponseErrorMessage(util.ServerError, moneyErr.Error())
+	}
+	responsePacket.Code = util.Success
+	responsePacket.Message = "Success"
+
+	return util.ResponseMessage(responsePacket)
+}
+
+func GameOver(UUID string, payload string) string {
+	responsePacket := response.GameOver{}
+
+	gameOverMoney := 100
+
+	ctx := context.Background()
+	db := server.DBManager.Login
+
+	//-- 보상 재화 계정에 추가
+	query := `UPDATE account SET money = money + ? WHERE uid = ?`
+	_, moneyErr := db.ExecContext(ctx, query, gameOverMoney, UUID)
+	if moneyErr != nil {
+		return util.ResponseErrorMessage(util.ServerError, moneyErr.Error())
+	}
+
+	//-- 현재 재화 불러오기
+	query = `SELECT money FROM account WHERE uid = ?`
+	moneyErr = db.QueryRowContext(ctx, query, UUID).Scan(&responsePacket.Money)
+	if moneyErr != nil {
+		return util.ResponseErrorMessage(util.ServerError, moneyErr.Error())
+	}
 	responsePacket.Code = util.Success
 	responsePacket.Message = "Success"
 
@@ -655,4 +831,18 @@ func RandomItemId(itemIds []int) []int {
 
 	//-- 매개변수 itemIds값이 4이하가 될때까지 재귀
 	return RandomItemId(itemIds)
+}
+
+func GetUserName(UUID string) string {
+	var userName string
+	ctx := context.Background()
+	db := server.DBManager.Login
+	query := `SELECT user_name FROM account WHERE uid = ?`
+	err := db.QueryRowContext(ctx, query, UUID).Scan(&userName)
+	if err != nil {
+		println("GetUserName Error!!::", err.Error())
+		return ""
+	}
+
+	return userName
 }

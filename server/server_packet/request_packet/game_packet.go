@@ -33,3 +33,7 @@ type BuyIngameItem struct {
 type ChnageUserName struct {
 	UserName string `json:"userName"`
 }
+
+type UpdateTimeAttackRank struct {
+	RecordTime float32 `json:"recordTime"`
+}

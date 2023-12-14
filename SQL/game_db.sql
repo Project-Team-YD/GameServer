@@ -17,6 +17,8 @@ CREATE TABLE inventory (
     INDEX(item_id),
 );
 
+
+
 -- Redis
 CREATE TABLE weapon_slot (
     uid VARCHAR(45) NOT NULL,

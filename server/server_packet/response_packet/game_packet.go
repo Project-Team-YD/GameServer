@@ -114,3 +114,29 @@ type BuyIngameItem struct {
 	Slot         []Weapon `json:"slot"`
 	Effect       []Effect `json:"effect"`
 }
+
+type TimeAttackUser struct {
+	Rank       int     `json:"rank"`
+	UserName   string  `json:"userName"`
+	RecordTime float32 `json:"recordTime"`
+}
+
+type LoadTimeAttackRankTable struct {
+	Code     uint             `json:"code"`
+	Message  string           `json:"message"`
+	RankList []TimeAttackUser `json:"rankList"`
+}
+
+type UpdateTimeAttackRank struct {
+	Code       uint    `json:"code"`
+	Message    string  `json:"message"`
+	RecordTime float32 `json:"recordTime"`
+	Rank       int     `json:"rank"`
+	Money      int     `json:"money"`
+}
+
+type GameOver struct {
+	Code    uint   `json:"code"`
+	Message string `json:"message"`
+	Money   int    `json:"money"`
+}
