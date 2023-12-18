@@ -591,7 +591,6 @@ rank변수 0일경우 랭킹에 들지 못함
 0이 아닐경우 랭킹에 해당
 */
 //-- 테스트 위해서 체크 랭킹 범위 체크해야됨
-var limitRank = "3"
 
 func UpdateTimeAttackRank(UUID string, payload string) string {
 	requestPacket := request.UpdateTimeAttackRank{}
@@ -601,7 +600,7 @@ func UpdateTimeAttackRank(UUID string, payload string) string {
 		return util.ResponseErrorMessage(util.BadRequest, err.Error())
 	}
 	userName := GetUserName(UUID)
-	var recordTime float32
+	var recordTime float64
 	var rank int
 	rank = 1
 	responsePacket.Rank = 0
@@ -645,7 +644,7 @@ func UpdateTimeAttackRank(UUID string, payload string) string {
 	responsePacket.RecordTime = recordTime
 
 	//-- 기존 기록 갱신시 갱신된 값 저장
-	if requestPacket.RecordTime > recordTime {
+	if requestPacket.RecordTime < recordTime {
 		query = `UPDATE time_attack_rank SET record_time = ? WHERE uid = ?`
 		_, rankErr = db.ExecContext(ctx, query, requestPacket.RecordTime, UUID)
 		if rankErr != nil {
@@ -656,13 +655,15 @@ func UpdateTimeAttackRank(UUID string, payload string) string {
 	}
 
 	//-- 랭킹 순위에 들어가 있는지 (현재 10위 셋팅)
-	query = `SELECT uid FROM time_attack_rank ORDER BY ASC LIMIT ` + limitRank
+	query = `SELECT uid FROM time_attack_rank ORDER BY record_time ASC LIMIT 3`
 	result, rankErr := db.QueryContext(ctx, query)
 	var rankerId string
+
+	if rankErr != nil {
+		return util.ResponseErrorMessage(util.ServerError, rankErr.Error())
+	}
 	for result.Next() {
-		if rankErr != nil {
-			return util.ResponseErrorMessage(util.ServerError, rankErr.Error())
-		}
+
 		result.Scan(&rankerId)
 		if UUID == rankerId {
 			responsePacket.Rank = rank
@@ -687,6 +688,7 @@ func UpdateTimeAttackRank(UUID string, payload string) string {
 	}
 	responsePacket.Code = util.Success
 	responsePacket.Message = "Success"
+	responsePacket.RewardMoney = clearMoney
 
 	return util.ResponseMessage(responsePacket)
 }
@@ -714,7 +716,7 @@ func GameOver(UUID string, payload string) string {
 	}
 	responsePacket.Code = util.Success
 	responsePacket.Message = "Success"
-
+	responsePacket.RewardMoney = gameOverMoney
 	return util.ResponseMessage(responsePacket)
 }
 

@@ -27,17 +27,17 @@ type itemWeapon struct {
 	Id     int
 	Name   string
 	Damage int
-	Speed  float32
+	Speed  float64
 	Range  int
 }
 type itemEffect struct {
 	Id          int
 	Name        string
-	MaxHp       float32
-	RegenHp     float32
-	Speed       float32
-	Damage      float32
-	AttackSpeed float32
+	MaxHp       float64
+	RegenHp     float64
+	Speed       float64
+	Damage      float64
+	AttackSpeed float64
 }
 type shopIngame struct {
 	Id    int

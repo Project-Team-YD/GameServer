@@ -28,15 +28,15 @@ type Item struct {
 }
 type ItemWeapon struct {
 	Damage int     `json:"damage"`
-	Speed  float32 `json:"speed"`
+	Speed  float64 `json:"speed"`
 	Range  int     `json:"range"`
 }
 type ItemEffect struct {
-	MaxHp       float32 `json:"maxHp"`
-	RegenHp     float32 `json:"regenHp"`
-	Speed       float32 `json:"shortDamage"`
-	Damage      float32 `json:"damage"`
-	AttackSpeed float32 `json:"attackSpeed"`
+	MaxHp       float64 `json:"maxHp"`
+	RegenHp     float64 `json:"regenHp"`
+	Speed       float64 `json:"shortDamage"`
+	Damage      float64 `json:"damage"`
+	AttackSpeed float64 `json:"attackSpeed"`
 }
 type WeaponEnchant struct {
 	Enchant     int `json:"enchant"`
@@ -118,7 +118,7 @@ type BuyIngameItem struct {
 type TimeAttackUser struct {
 	Rank       int     `json:"rank"`
 	UserName   string  `json:"userName"`
-	RecordTime float32 `json:"recordTime"`
+	RecordTime float64 `json:"recordTime"`
 }
 
 type LoadTimeAttackRankTable struct {
@@ -128,15 +128,17 @@ type LoadTimeAttackRankTable struct {
 }
 
 type UpdateTimeAttackRank struct {
-	Code       uint    `json:"code"`
-	Message    string  `json:"message"`
-	RecordTime float32 `json:"recordTime"`
-	Rank       int     `json:"rank"`
-	Money      int     `json:"money"`
+	Code        uint    `json:"code"`
+	Message     string  `json:"message"`
+	RecordTime  float64 `json:"recordTime"`
+	Rank        int     `json:"rank"`
+	Money       int     `json:"money"`
+	RewardMoney int     `json:"rewardMoney"`
 }
 
 type GameOver struct {
-	Code    uint   `json:"code"`
-	Message string `json:"message"`
-	Money   int    `json:"money"`
+	Code        uint   `json:"code"`
+	Message     string `json:"message"`
+	Money       int    `json:"money"`
+	RewardMoney int    `json:"rewardMoney"`
 }

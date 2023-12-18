@@ -35,5 +35,5 @@ type ChnageUserName struct {
 }
 
 type UpdateTimeAttackRank struct {
-	RecordTime float32 `json:"recordTime"`
+	RecordTime float64 `json:"recordTime"`
 }
