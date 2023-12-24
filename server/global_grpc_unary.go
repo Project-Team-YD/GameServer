@@ -32,7 +32,7 @@ func (server *GrpcServer) GlobalGRpc(ctx context.Context, request *global_grpc.G
 	}
 
 	UUID = metaData[0]
-	println("Request Header UUID:", UUID)
+	println("Rpc Key:", request.RpcKey, " / Request UUID:", UUID)
 
 	result.Message = LoadRpc(request.RpcKey, UUID, request.Message)
 

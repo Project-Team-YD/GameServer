@@ -30,6 +30,9 @@ func RegistGameRpc() {
 	server.RegistRpc("user_name", ChangeUserName)
 }
 
+/*
+서버에서 캐싱하고 있는 DB테이블들의 정보를 클라이언트에게 Return
+*/
 func LoadTables(UUID string, payload string) string {
 	ctx := context.Background()
 	responsePacket := response.GameDB{}
@@ -116,6 +119,9 @@ func LoadTables(UUID string, payload string) string {
 	return util.ResponseMessage(responsePacket)
 }
 
+/*
+요청자의 UUID를 값으로 GameDB Inventory테이블에서 데이터를 불러온뒤 요청자에게 Return
+*/
 func LoadInventory(UUID string, payload string) string {
 
 	responsePacket := response.Inventory{}
@@ -151,7 +157,13 @@ func LoadInventory(UUID string, payload string) string {
 	return util.ResponseMessage(responsePacket)
 }
 
-// -- 중첩되지 않는 아이템인데 구매하려할때 예외처리
+/*
+요청자는 구매할 아이템의 Id값을 요청하고
+아이템 Id를 키값으로 캐싱되어 있는 Shop테이블에서 판매 가격을 불러오고
+LoginDB account테이블에서 요청자의 재화 보유값과 판매 가격을 비교하여 구매 가능여부 판별후
+구매 가능시 account테이블에서 Shop테이블 판매 가격만큼 차감후
+요청자에게 return
+*/
 func BuyItem(UUID string, payload string) string {
 	requestPacket := request.BuyItem{}
 	responsePacket := response.BuyItem{}
@@ -238,6 +250,14 @@ func BuyItem(UUID string, payload string) string {
 	return util.ResponseMessage(responsePacket)
 }
 
+/*
+요청자는 업그레이드할 아이템의 Id값을 요청하고
+GameDB Inventory테이블에서 해당 아이템의 Enchant수치를 불러오고
+LoginDB WeaponEnchantProbability테이블에서 인챈트 수치에 따른 확률정보를 불러온다.
+확률은 소수점 4자리까지 표기하기 위해 0~100만까지의 랜덤값과 인챈트별 해당 확률정보 값을 비교하여
+성공 여부를 판별하였고 성공 유무 상관없이 재화 또한 LoginDB account테이블에서 재화 감소후
+업그레이드 결과 여부를 Return
+*/
 func UpgradeItem(UUID string, payload string) string {
 	println("UpgradeItem")
 	requestPacket := request.UpgradeItem{}
@@ -321,6 +341,12 @@ func UpgradeItem(UUID string, payload string) string {
 	return util.ResponseMessage(responsePacket)
 }
 
+/*
+요청자는 인게임 플레이를 위해 착용할 장비 아이템의 Id값을 요청하고
+GameDB Inventory테이블에서 해당 아이템의 정보와
+요청자의 정보 (아이템 슬롯, 골드, 스테이지)를 초기화 및 캐싱하고
+캐싱된 정보를 요청자에게 Return
+*/
 func JoinGame(UUID string, payload string) string {
 	requestPacket := request.JoinGame{}
 	responsePacket := response.JoinGame{}
@@ -367,12 +393,36 @@ func JoinGame(UUID string, payload string) string {
 	responsePacket.Gold = server.Users[UUID].Gold
 	responsePacket.CurrentStage = server.Users[UUID].CurrentStage
 
+	_, isExist := server.Users[UUID]
+	if !isExist {
+		responsePacket.Code = util.Fail
+		responsePacket.Message = "User Data Caching Fail"
+		return util.ResponseMessage(responsePacket)
+	}
 	responsePacket.Code = util.Success
 	responsePacket.Message = "Success"
 
 	return util.ResponseMessage(responsePacket)
 }
 
+/*
+요청자는 플레이한 스테이지와 획득한 골드값을 호출하고
+플레이한 스테이지와 서버에서 캐싱하고 있는 스테이지 값과 비교하여
+해당 유저가 스테이지 조작여부를 판별하고
+획득한 골드의 재화값만큼 캐싱하고 있는 골드 값에 추가를 한다.
+
+요청자에게 보여줄 판매할 인게임 아이템들은 랜덤으로 획득을 하게 된다.
+RandomItemId함수를 통해 랜덤하게 뽑힌 아이템 리스트를 Return한다.
+
+RandomItemId의 구조는
+해당 함수 첫 실행시 매개변수인 ItemIds가 가지게 되는 데이터는
+기본적으로 LoginDB ItemWeapon테이블, ItemEffect테이블에 등록된 ItemId들이며
+요청자가 착용한 장비의 갯수가 2개 이상일시 ItemWeapon테이블에 등록된 ItemId들 대신
+요청자가 착용한 장비의 ItemId들이 추가 된다.
+함수가 실행되면서 0부터 매개변수로 받은 ItemIds의 크기의 범위까지 랜덤한 값을 뽑고
+해당 값의 ItemIds의 인덱스를 가진 데이터를 비워가며 재귀함수로 연산하게 되며
+ItemIds가 판매 아이템 목록 갯수만큼의 사이즈에 도달할 경우 결과를 Return
+*/
 func LoadIngameShop(UUID string, payload string) string {
 	requestPacket := request.LoadIngameShop{}
 	responsePacket := response.LoadIngameShop{}
@@ -627,11 +677,14 @@ func UpdateTimeAttackRank(UUID string, payload string) string {
 				return util.ResponseErrorMessage(util.ServerError, moneyErr.Error())
 			}
 
+			var money int
 			query = `SELECT money FROM account WHERE uid = ?`
-			moneyErr = db.QueryRowContext(ctx, query, UUID).Scan(&responsePacket.Money)
+			moneyErr = db.QueryRowContext(ctx, query, UUID).Scan(&money)
 			if moneyErr != nil {
 				return util.ResponseErrorMessage(util.ServerError, moneyErr.Error())
 			}
+			responsePacket.Money = money
+			responsePacket.RewardMoney = clearMoney
 
 			responsePacket.Code = util.Success
 			responsePacket.Message = "Success"
@@ -663,7 +716,6 @@ func UpdateTimeAttackRank(UUID string, payload string) string {
 		return util.ResponseErrorMessage(util.ServerError, rankErr.Error())
 	}
 	for result.Next() {
-
 		result.Scan(&rankerId)
 		if UUID == rankerId {
 			responsePacket.Rank = rank
